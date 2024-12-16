@@ -1,0 +1,13 @@
+[package]
+name = "Capture_The_Flag"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tokio = { version = "1", features = ["full"] }
+tokio-tungstenite = "*"
+serde = { version = "1.0", features = ["derive"] }
+
+[[bin]]
+name = "main"
+path = "server/src/main.rs"
