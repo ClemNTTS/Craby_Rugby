@@ -8,13 +8,10 @@
 .cell {
   width: 50px;
   height: 50px;
-  background-color: #404040;
   border: 1px solid #ccc;
 }
-.cell:hover {
-  background-color: lightgreen;
-}
-
-body {
-  background-color: darkgray;
+.cell.player {
+  background-color: red; /* ou une autre couleur visible */
+  color: white;
+  font-weight: bold;
 }
