@@ -15,3 +15,27 @@
   color: white;
   font-weight: bold;
 }
+
+.stamina_container {
+  width: 200px;
+  height: 20px;
+  background-color: #ddd;
+  border: 1px solid #000;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.stamina_bar {
+  height: 100%;
+  width: 100%;
+  background-color: #4caf50;
+  transition: width 0.3s ease-out;
+}
+
+.stamina_bar.low {
+  background-color: #ff9800;
+}
+
+.stamina_bar.critical {
+  background-color: #f44336;
+}

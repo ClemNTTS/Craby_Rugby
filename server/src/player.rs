@@ -2,6 +2,8 @@ use serde::Serialize;
 
 pub const STAMINA_COST: i32 = 10;
 pub const MAX_STAMINA: i32 = 100;
+pub const GRID_WIDTH: i32 = 10;
+pub const GRID_HEIGHT: i32 = 10;
 
 #[derive(Clone, Serialize)]
 pub struct Player {
@@ -29,10 +31,36 @@ impl Player {
         }
 
         match direction {
-            "up" => self.position.1 -= 1,
-            "down" => self.position.1 += 1,
-            "left" => self.position.0 -= 1,
-            "right" => self.position.0 += 1,
+            "up" => {
+                if self.position.1 > 0 {
+                    self.position.1 -= 1;
+                } else {
+                    return false;
+                }
+            }
+            "down" => {
+                if self.position.1 < GRID_HEIGHT - 1 {
+                    // Supposant un plateau de 10x10
+                    self.position.1 += 1;
+                } else {
+                    return false;
+                }
+            }
+            "left" => {
+                if self.position.0 > 0 {
+                    self.position.0 -= 1;
+                } else {
+                    return false;
+                }
+            }
+            "right" => {
+                if self.position.0 < GRID_WIDTH - 1 {
+                    // Supposant un plateau de 10x10
+                    self.position.0 += 1;
+                } else {
+                    return false;
+                }
+            }
             _ => return false,
         }
 

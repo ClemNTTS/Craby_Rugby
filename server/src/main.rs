@@ -9,7 +9,7 @@ use tokio::sync::Mutex;
 use tokio_tungstenite::accept_async;
 use tokio_tungstenite::tungstenite::protocol::Message;
 
-use game::{broadcast_state, GameState};
+use game::{recharge_stamina, GameState};
 use player::Player;
 
 #[derive(Serialize, Deserialize)]
@@ -30,14 +30,17 @@ async fn main() -> anyhow::Result<()> {
 
     let mut player_id_counter = 0;
 
+    let game_state_gard = Arc::clone(&game_state);
+    tokio::spawn(recharge_stamina(game_state_gard));
+
     while let Ok((stream, _)) = listener.accept().await {
-        let game_state = Arc::clone(&game_state);
+        let game_state_clone = Arc::clone(&game_state);
         let clients = Arc::clone(&clients);
         player_id_counter += 1;
 
         tokio::spawn(handle_connection(
             stream,
-            game_state,
+            game_state_clone,
             clients,
             player_id_counter,
         ));
@@ -64,6 +67,19 @@ async fn handle_connection(
         game_state.lock().await.update_player(&player);
     }
 
+    let initial_message = InitialMessage {
+        player_id: player_id,
+        stamina: player.stamina,
+    };
+
+    // Send the initial message
+    sender
+        .send(Message::Text(
+            serde_json::to_string(&initial_message).unwrap(),
+        ))
+        .await
+        .unwrap();
+
     // Envoyer l'état initial
     sender
         .send(Message::Text(
@@ -72,10 +88,23 @@ async fn handle_connection(
         .await
         .unwrap();
 
-    let game_state_clone = Arc::clone(&game_state);
     tokio::spawn(async move {
         while let Some(msg) = rx.recv().await {
             sender.send(msg).await.unwrap();
+        }
+    });
+
+    // Periodically send the game state to all connected clients
+    let game_state_clone = Arc::clone(&game_state);
+    let clients_clone = Arc::clone(&clients);
+    tokio::spawn(async move {
+        loop {
+            tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
+
+            let state = serde_json::to_string(&*game_state_clone.lock().await).unwrap();
+            for (_, tx) in clients_clone.lock().await.iter() {
+                let _ = tx.send(Message::Text(state.clone()));
+            }
         }
     });
 
@@ -106,4 +135,10 @@ async fn handle_connection(
     println!("Player {} disconnected", player_id);
     clients.lock().await.remove(&player_id);
     game_state.lock().await.players.remove(&player_id);
+}
+
+#[derive(Serialize, Deserialize)]
+struct InitialMessage {
+    player_id: u8,
+    stamina: i32,
 }
