@@ -3,6 +3,9 @@
   grid-template-columns: repeat(10, 50px);
   grid-template-rows: repeat(10, 50px);
   gap: 1px;
+
+  width: max-content;
+  height: max-content;
 }
 
 .cell {
@@ -14,6 +17,10 @@
   background-color: red; /* ou une autre couleur visible */
   color: white;
   font-weight: bold;
+}
+
+.cell.flag {
+  background-color: dodgerblue;
 }
 
 .stamina_container {

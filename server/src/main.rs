@@ -18,6 +18,13 @@ struct ClientAction {
     direction: Option<String>,
 }
 
+#[derive(Serialize, Deserialize)]
+struct FlagPosition {
+    player_id: i32,
+    x: i32,
+    y: i32,
+}
+
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let addr = "127.0.0.1:8080";
@@ -127,6 +134,45 @@ async fn handle_connection(
             // Diffuser l'état du jeu à tous
             let state = serde_json::to_string(&*game).unwrap();
             for (_, tx) in clients.lock().await.iter() {
+                let _ = tx.send(Message::Text(state.clone()));
+            }
+        } else if let Ok(flag) = serde_json::from_str::<FlagPosition>(msg.to_text().unwrap_or("")) {
+            let mut game = game_state.lock().await;
+            let mut flag_updated = false;
+            if flag.player_id != 0 {
+                for (_, player) in game.players.iter_mut() {
+                    if player.id == flag.player_id as u8 {
+                        player.has_flag = true;
+                        flag_updated = true;
+                        break;
+                    }
+                }
+            }
+
+            if flag_updated {
+                let state = serde_json::to_string(&*game).unwrap();
+                drop(game); // Libère le verrou sur game_state
+
+                let clients_lock = clients.lock().await;
+                for (_, tx) in clients_lock.iter() {
+                    let _ = tx.send(Message::Text(state.clone()));
+                }
+            }
+
+            {
+                let mut game = game_state.lock().await;
+                for player in game.players.iter_mut() {
+                    if player.1.has_flag {
+                        game.flag_position = player.1.position;
+                        break;
+                    }
+                }
+            } // Le verrou est libéré ici
+
+            let state = serde_json::to_string(&*game_state.lock().await).unwrap();
+            let clients_lock = clients.lock().await;
+            for (_, tx) in clients_lock.iter() {
+                println!("{}", state.clone());
                 let _ = tx.send(Message::Text(state.clone()));
             }
         }

@@ -6,6 +6,7 @@ const players = {}; // Stocke les positions des joueurs { id: { x, y } }
 my_id = 0;
 stamina = 0;
 const stamina_bar = document.getElementById("stamina_bar");
+flag = document.getElementById("cell-4-4");
 
 socket.onopen = () => {
   console.log("Connected to WebSocket server");
@@ -49,6 +50,16 @@ socket.onmessage = (event) => {
   } else {
     console.log("Received unknown message type:", data);
   }
+
+  if (data.flag_position) {
+    flag = document.getElementById(
+      `cell-${data.flag_position[0]}-${data.flag_position[0]}`
+    );
+    if (!flag.classList.contains("player")) {
+      flag.classList.add("flag");
+      flag.textContent = "flag";
+    }
+  }
 };
 
 function updatePlayers(playerList) {
@@ -63,7 +74,6 @@ function move_player(player) {
   const position = player.position;
 
   if (id === my_id) {
-    console.log(`HEY`);
     stamina = player.stamina;
     stamina_bar.textContent = String(stamina);
   }
@@ -72,6 +82,20 @@ function move_player(player) {
   players[id] = { x: position[0], y: position[1] };
 
   const cell = document.getElementById(`cell-${position[1]}-${position[0]}`);
+  if (cell.classList.contains("flag")) {
+    socket.send(
+      JSON.stringify({ player_id: my_id, x: position[0], y: position[1] })
+    );
+    cell.classList.remove("flag");
+  }
+
+  if (cell.classList.contains("player")) {
+    console.log(
+      `Player ${id} cannot move to cell ${position[1]}-${position[0]} as it already has a player`
+    );
+    return;
+  }
+
   if (cell) {
     console.log(`Found cell for player ${id}`);
     cell.classList.add("player");
