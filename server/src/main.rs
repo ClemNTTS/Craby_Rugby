@@ -1,5 +1,8 @@
 mod game;
-mod player; // Import du module player.rs // Import du module game.rs
+mod player;
+
+mod config;
+use config::GameConfig;
 
 use futures_util::{SinkExt, StreamExt};
 use serde::{Deserialize, Serialize};
@@ -27,7 +30,9 @@ struct FlagPosition {
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    let addr = "127.0.0.1:8080";
+    let config = GameConfig::load();
+    println!("Game Config: {:?}", config.max_stamina);
+    let addr = format!("{}:{}", config.host, config.port);
     let listener = TcpListener::bind(&addr).await?;
     println!("Server running on {}", addr);
 
@@ -37,8 +42,8 @@ async fn main() -> anyhow::Result<()> {
 
     let mut player_id_counter = 0;
 
-    let game_state_gard = Arc::clone(&game_state);
-    tokio::spawn(recharge_stamina(game_state_gard));
+    let game_state_guard = Arc::clone(&game_state);
+    tokio::spawn(recharge_stamina(game_state_guard));
 
     while let Ok((stream, _)) = listener.accept().await {
         let game_state_clone = Arc::clone(&game_state);
@@ -115,26 +120,20 @@ async fn handle_connection(
         }
     });
 
-    // Écouter les actions du joueur
     while let Some(Ok(msg)) = receiver.next().await {
         if let Ok(action) = serde_json::from_str::<ClientAction>(msg.to_text().unwrap_or("")) {
             let mut game = game_state.lock().await;
-            if let Some(player) = game.players.get_mut(&player_id) {
-                if action.action == "move" {
-                    if let Some(direction) = action.direction {
-                        let player_updated = player.move_player(&direction);
-                        if player_updated {
-                            let player_clone = player.clone();
-                            game.update_player(&player_clone);
+            if action.action == "move" {
+                if let Some(direction) = action.direction {
+                    let update_needed = game.handle_player_movement(player_id, &direction);
+                    if update_needed {
+                        // Diffuser game state
+                        let state = serde_json::to_string(&*game).unwrap();
+                        for (_, tx) in clients.lock().await.iter() {
+                            let _ = tx.send(Message::Text(state.clone()));
                         }
                     }
                 }
-            }
-
-            // Diffuser l'état du jeu à tous
-            let state = serde_json::to_string(&*game).unwrap();
-            for (_, tx) in clients.lock().await.iter() {
-                let _ = tx.send(Message::Text(state.clone()));
             }
         } else if let Ok(flag) = serde_json::from_str::<FlagPosition>(msg.to_text().unwrap_or("")) {
             let mut game = game_state.lock().await;
@@ -151,7 +150,7 @@ async fn handle_connection(
 
             if flag_updated {
                 let state = serde_json::to_string(&*game).unwrap();
-                drop(game); // Libère le verrou sur game_state
+                drop(game);
 
                 let clients_lock = clients.lock().await;
                 for (_, tx) in clients_lock.iter() {
@@ -167,12 +166,10 @@ async fn handle_connection(
                         break;
                     }
                 }
-            } // Le verrou est libéré ici
-
+            }
             let state = serde_json::to_string(&*game_state.lock().await).unwrap();
             let clients_lock = clients.lock().await;
             for (_, tx) in clients_lock.iter() {
-                println!("{}", state.clone());
                 let _ = tx.send(Message::Text(state.clone()));
             }
         }

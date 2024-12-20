@@ -1,0 +1,10 @@
+{
+  "host": "127.0.0.1",
+  "port": 8080,
+  "grid_width": 10,
+  "grid_height": 10,
+  "initial_flag_position": [4, 4],
+  "stamina_cost": 10,
+  "max_stamina": 80,
+  "stamina_recharge_rate": 10
+}

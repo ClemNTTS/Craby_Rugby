@@ -1,3 +1,15 @@
+:root {
+  --BLUE--: #5168d0;
+  --RED--: #f44336;
+  --BODY--: white;
+  --FONT-COLOR--: white;
+  --GREEN--: #6dd475;
+}
+
+.body {
+  background-color: var(--BODY--);
+}
+
 #game-board {
   display: grid;
   grid-template-columns: repeat(10, 50px);
@@ -13,14 +25,31 @@
   height: 50px;
   border: 1px solid #ccc;
 }
-.cell.player {
+
+.cell.blue_goal {
+  background-color: #ab342b;
+}
+.cell.red_goal {
+  background-color: #37478e;
+}
+
+.cell.even_player {
   background-color: red; /* ou une autre couleur visible */
-  color: white;
+  color: var(--FONT-COLOR--);
+  font-weight: bold;
+}
+.cell.odd_player {
+  background-color: #5168d0; /* ou une autre couleur visible */
+  color: var(--FONT-COLOR--);
   font-weight: bold;
 }
 
+.cell.player-has-flag {
+  background-color: var(--GREEN--);
+}
+
 .cell.flag {
-  background-color: dodgerblue;
+  background-color: var(--GREEN--);
 }
 
 .stamina_container {

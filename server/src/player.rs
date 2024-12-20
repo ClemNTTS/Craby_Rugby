@@ -1,9 +1,8 @@
 use serde::Serialize;
 
-pub const STAMINA_COST: i32 = 10;
+use crate::config;
+
 pub const MAX_STAMINA: i32 = 100;
-pub const GRID_WIDTH: i32 = 10;
-pub const GRID_HEIGHT: i32 = 10;
 
 #[derive(Clone, Serialize)]
 pub struct Player {
@@ -16,55 +15,25 @@ pub struct Player {
 
 impl Player {
     pub fn new(id: u8, name: String) -> Self {
+        let mut pos = (0, 0);
+
+        let width = config::GameConfig::load().grid_width;
+        let height = config::GameConfig::load().grid_height;
+
+        if id % 2 == 0 {
+            pos = (width / 2 - 1, 0);
+        } else {
+            pos = (width / 2 - 1, height - 1);
+        }
+
+        let max = config::GameConfig::load().max_stamina;
+
         Self {
             id,
             name,
-            position: (0, 0),
-            stamina: MAX_STAMINA,
+            position: pos,
+            stamina: max,
             has_flag: false,
         }
-    }
-
-    pub fn move_player(&mut self, direction: &str) -> bool {
-        if self.stamina < STAMINA_COST {
-            return false; // Pas assez de stamina
-        }
-
-        match direction {
-            "up" => {
-                if self.position.1 > 0 {
-                    self.position.1 -= 1;
-                } else {
-                    return false;
-                }
-            }
-            "down" => {
-                if self.position.1 < GRID_HEIGHT - 1 {
-                    // Supposant un plateau de 10x10
-                    self.position.1 += 1;
-                } else {
-                    return false;
-                }
-            }
-            "left" => {
-                if self.position.0 > 0 {
-                    self.position.0 -= 1;
-                } else {
-                    return false;
-                }
-            }
-            "right" => {
-                if self.position.0 < GRID_WIDTH - 1 {
-                    // Supposant un plateau de 10x10
-                    self.position.0 += 1;
-                } else {
-                    return false;
-                }
-            }
-            _ => return false,
-        }
-
-        self.stamina -= STAMINA_COST;
-        true
     }
 }
