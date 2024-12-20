@@ -1,10 +1,7 @@
-![image](https://github.com/user-attachments/assets/82701452-baf2-4309-b582-1cc76c84c0df)
-
+![image](https://github.com/user-attachments/assets/2abfab79-86ef-4030-b5ea-581ee6593a0b)
 
 # Craby Rugby
 This is my first multiplayer game project (and my first game overall, by the way). The objectives for this project are to learn server-side programming in Rust and create a simple graphical game with the lowest possible latency.
-
-![image](https://github.com/user-attachments/assets/75894652-f114-49a5-add5-4b0b6c29886c)
 
 ## Table of Contents
 - [Introduction](#introduction)
@@ -64,6 +61,7 @@ Craby Rugby is a multiplayer game where players are divided into two teams, and 
     ```sh
     cargo run
     ```
+![image](https://github.com/user-attachments/assets/75894652-f114-49a5-add5-4b0b6c29886c)
 
 ## Usage
 1. Open your browser and navigate to `http://localhost:8000`.
