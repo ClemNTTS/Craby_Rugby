@@ -1,4 +1,5 @@
-![image](https://github.com/user-attachments/assets/50ef8185-d9b9-43a1-84b6-28e20c26bf58)
+![image](https://github.com/user-attachments/assets/82701452-baf2-4309-b582-1cc76c84c0df)
+
 
 # Craby Rugby
 This is my first multiplayer game project (and my first game overall, by the way). The objectives for this project are to learn server-side programming in Rust and create a simple graphical game with the lowest possible latency.
