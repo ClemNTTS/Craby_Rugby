@@ -6,5 +6,6 @@
   "initial_flag_position": [4, 4],
   "stamina_cost": 10,
   "max_stamina": 80,
-  "stamina_recharge_rate": 10
+  "stamina_recharge_rate": 10,
+  "serv_web_ip": ["127.0.0.1", 3030]
 }

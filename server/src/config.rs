@@ -11,6 +11,7 @@ pub struct GameConfig {
     pub stamina_cost: i32,
     pub max_stamina: i32,
     pub stamina_recharge_rate: i32,
+    pub serv_web_ip: (String, u16),
 }
 
 impl Default for GameConfig {
@@ -24,6 +25,7 @@ impl Default for GameConfig {
             stamina_cost: 10,
             max_stamina: 100,
             stamina_recharge_rate: 10,
+            serv_web_ip: ("localhost".to_string(), 3030),
         }
     }
 }
